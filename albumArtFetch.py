@@ -14,9 +14,10 @@ def fetchAlbumArt(artist, album):
     mbid = "" #Music Brainz ID number, which we will find using the search function
     searchQuery = urllib.parse.quote_plus("%s %s" % (artist, album))#make search query http parsable 
     search_url = BASE_MB_SEARCH_URL+searchQuery
-    response = urllib.request.openurl(search_url) #Make HTTP request to database
+    response = urllib.request.urlopen(search_url) #Make HTTP request to database
     results_xml = response.read()                 #Store the XML formatted response in memory
     
+    print(results_xml) #This is for testing
     #topResult = 
     
     
