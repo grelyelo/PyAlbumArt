@@ -22,9 +22,10 @@ def getLinkToAlbumArt(artist, album, mbid = ""):
     searchURL = BASE_MB_SEARCH_URL+searchQuery
 
     response = urllib.request.urlopen(searchURL) #Make HTTP request to database
-    resultsXML = response.read()                 #Store the XML formatted response in memory
-    bsXML = bs(resultsXML,"xml") #Create BeautifulSoup Parsable XML
+    rawXML = response.read() #Store the XML formatted response in memory
+    parsableXML = bs(rawXML,"xml") #Create BeautifulSoup Parsable XML
 
-    results = bsXML.find_all('release-group') 
-    firstResult = results[0]#It is most likely that the first result will be correct, so we will assume it is correct. 
-        
+    results = parsableXML.find_all('release-group') #List of results. 
+    #Will assume first result is correct unless user tells us otherwise. 
+
+
