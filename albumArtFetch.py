@@ -1,30 +1,29 @@
 import urllib.request
 import urllib.parse
-import json
+import requests
 from bs4 import BeautifulSoup as bs
 
-BASE_MB_SEARCH_URL = "https://musicbrainz.org/ws/2/release-group/?query="
-BASE_CAA_SEARCH_URL = "https://coverartarchive.org/release-group/"
+BASE_MB_SEARCH_URL = "https://musicbrainz.org/ws/2/release/?query="
+BASE_CAA_SEARCH_URL = "https://coverartarchive.org/release/"
 
-def getLinkToAlbumArt(artist, album, mbid = "", size="image"):
-    #We are using coverartarchive.org API  
+def getLinkToAlbumArt(artist, album, mbid = "", art="front"):
+	
+	#We are using coverartarchive.org API  
     #first, we need to find the album from musicbrainz.org
     #so we search the album and and get the mbid for the first result
 
-	if not size in ["large", "small", "image"]:
-		print("Invalid art size")
-		return None
-	
-	if(len(mbid) == 0):#If we are not provided an mbid. Otherwise, skip the following. 
+	if(len(mbid) == 0):#If we are not provided an mbid, search for correct mbid. Otherwise, skip the following. 
 		print("attempting to get mbid")
-		searchQuery = urllib.parse.quote_plus("%s %s" % (artist, album))#make search query http parsable 
+		artist=urllib.parse.quote_plus(artist)
+		album=urllib.parse.quote_plus(album)
+		searchQuery = "artist:"+artist+"%20AND%20release:"+album+"&limit=1"
 
-		print("making musicbrainz request")
-		response = urllib.request.urlopen(BASE_MB_SEARCH_URL+searchQuery) #Make HTTP request to database
+		#Make the search
+		response = urllib.request.urlopen(BASE_MB_SEARCH_URL+searchQuery) 
+		
 		rawXML = response.read() #Store the XML formatted response in memory
 		parsableXML = bs(rawXML,"xml") #Create BeautifulSoup Parsable XML
-
-		results = parsableXML.find_all('release-group') #List of results. 
+		results = parsableXML.find_all('release') #List of results. 
 		#Will assume first result is correct unless user tells us otherwise. 
 		
 		try:
@@ -34,18 +33,8 @@ def getLinkToAlbumArt(artist, album, mbid = "", size="image"):
 			return None
 			
 	if(len(mbid) > 0):
-		response = urllib.request.urlopen(BASE_CAA_SEARCH_URL+mbid)
-		coverListingJSON = response.read()
-		albumArtInfo = json.loads(coverListingJSON)
-		"""for key in albumArtInfo:
-			print(key)
-			print(albumArtInfo[key])"""
-			
-	try:
-		if size in ["large", "small"]:
-			return albumArtInfo["images"][0]["thumbnails"][size]#Return the link to the album art using given size. 
-		else: 
-			return albumArtInfo["images"][0][size]
-	except KeyError:
-		print("Album art size '%s' not found in listing. Try another size" % size)
+		#If we have an MBID, we can try to search the cover art archive for the art. 
+		caaHeadResponse = requests.head(BASE_CAA_SEARCH_URL+mbid+"/"+art, allow_redirects=True)
+		return caaHeadResponse.url
+	else:
 		return None
