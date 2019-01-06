@@ -3,8 +3,8 @@ import urllib.parse
 import requests
 from bs4 import BeautifulSoup as bs
 
-BASE_MB_SEARCH_URL = "https://musicbrainz.org/ws/2/release/?query="
-BASE_CAA_SEARCH_URL = "https://coverartarchive.org/release/"
+BASE_MB_SEARCH_URL = "https://musicbrainz.org/ws/2/release-group/?query="
+BASE_CAA_SEARCH_URL = "https://coverartarchive.org/release-group/"
 
 def getLinkToAlbumArt(artist, album, mbid = "", art="front"):
 	
@@ -17,13 +17,14 @@ def getLinkToAlbumArt(artist, album, mbid = "", art="front"):
 		artist=urllib.parse.quote_plus(artist)
 		album=urllib.parse.quote_plus(album)
 		searchQuery = "artist:"+artist+"%20AND%20release:"+album+"&limit=1"
-
+                
+		print("Using search url: %s%s" % (BASE_MB_SEARCH_URL, searchQuery))
 		#Make the search
 		response = urllib.request.urlopen(BASE_MB_SEARCH_URL+searchQuery) 
 		
 		rawXML = response.read() #Store the XML formatted response in memory
 		parsableXML = bs(rawXML,"xml") #Create BeautifulSoup Parsable XML
-		results = parsableXML.find_all('release') #List of results. 
+		results = parsableXML.find_all('release-group') #List of results. 
 		#Will assume first result is correct unless user tells us otherwise. 
 		
 		try:
@@ -34,6 +35,7 @@ def getLinkToAlbumArt(artist, album, mbid = "", art="front"):
 			
 	if(len(mbid) > 0):
 		#If we have an MBID, we can try to search the cover art archive for the art. 
+		print("Using coverartarchive url: %s%s/%s" %(BASE_CAA_SEARCH_URL, mbid, art))
 		caaHeadResponse = requests.head(BASE_CAA_SEARCH_URL+mbid+"/"+art, allow_redirects=True)
 		return caaHeadResponse.url
 	else:
