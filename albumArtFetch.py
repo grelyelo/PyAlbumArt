@@ -13,13 +13,11 @@ def getLinkToAlbumArt(artist, album, mbid = "", art="front"):
     #so we search the album and and get the mbid for the first result
 
 	if(len(mbid) == 0):#If we are not provided an mbid, search for correct mbid. Otherwise, skip the following. 
-		print("attempting to get mbid")
 		artist=urllib.parse.quote_plus(artist)
 		album=urllib.parse.quote_plus(album)
 		searchQuery = "artist:"+artist+"%20AND%20release:"+album+"&limit=1"
                 
-		print("Using search url: %s%s" % (BASE_MB_SEARCH_URL, searchQuery))
-		#Make the search
+        #Make the search
 		response = urllib.request.urlopen(BASE_MB_SEARCH_URL+searchQuery) 
 		
 		rawXML = response.read() #Store the XML formatted response in memory
@@ -35,7 +33,6 @@ def getLinkToAlbumArt(artist, album, mbid = "", art="front"):
 			
 	if(len(mbid) > 0):
 		#If we have an MBID, we can try to search the cover art archive for the art. 
-		print("Using coverartarchive url: %s%s/%s" %(BASE_CAA_SEARCH_URL, mbid, art))
 		caaHeadResponse = requests.head(BASE_CAA_SEARCH_URL+mbid+"/"+art, allow_redirects=True)
 		return caaHeadResponse.url
 	else:
